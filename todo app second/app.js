@@ -11,35 +11,62 @@ var firebaseConfig = {
   };
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
+//   fetching from firebase
 firebase.database().ref("todo").on('child_added', function(data){
-    var k = Object.keys(data.val())
-    console.log(data.val().k)
     var todo = document.getElementById("todo")
-    var litext = document.createTextNode(data.val());
-   var li = document.createElement("li");
+    var litext = document.createTextNode(data.val().value);
+    var li = document.createElement("li");
     li.appendChild(litext);
     list.appendChild(li);
-     var delbtn = document.createElement("button");
+    // delete btn
+    var delbtn = document.createElement("button");
     var deltext = document.createTextNode("delete")
     delbtn.setAttribute("class", "btn")
+    delbtn.setAttribute("id",data.val().key)
     delbtn.setAttribute("onclick", "deleteitem(this)")
     delbtn.appendChild(deltext);
     li.appendChild(delbtn);
+    // edit btn
+    var editbtn = document.createElement("button");
+    var edittext = document.createTextNode("edit todo")
+    editbtn.setAttribute("class", "btn")
+    editbtn.setAttribute("id",data.val().key)
+    editbtn.setAttribute("onclick", "edititem(this)")
+    editbtn.appendChild(edittext);
+    li.appendChild(editbtn);
 })
-
-
+//  add todo
 function addtodo (){
+    var todos = document.getElementById("todo")
     var key = firebase.database().ref("todo").push().key;
-    firebase.database().ref("todo").child(key).push(todo.value);
+    var todo = {
+        value:todos.value,
+        key:key
+    }
+    firebase.database().ref("todo").child(key).set(todo);
+    todos.value = "";
 }
-
+// delete todo
 function deleteitem(e) {
-// e.parentNode().remove();
-
+firebase.database().ref("todo").child(e.id).remove();
+e.parentNode.remove()
 }
+// delete all
 function deleteall() {
    firebase.database().ref("todo").remove()
+   list.innerHTML="";
 }
+// edit todo
+function edititem(e) {
+    var edit = prompt("Edit todo task")
+    var newtodo = {
+        value:edit,
+        key:e.id
+    }
+    firebase.database().ref("todo").child(e.id).set(newtodo);
+   e.parentNode.firstChild.nodeValue = edit
+
+ }
 
 
 
